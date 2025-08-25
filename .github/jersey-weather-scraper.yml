@@ -1,0 +1,195 @@
+name: Jersey Weather Scraper
+
+on:
+  schedule:
+    # Run daily at 10:30 AM UTC (11:30 AM BST in summer, 10:30 AM GMT in winter)
+    # This ensures we get reliable data after the morning update
+    - cron: '30 10 * * *'
+  workflow_dispatch: # Allow manual triggering for testing
+
+jobs:
+  scrape-weather:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+    
+    - name: Create directories
+      run: |
+        mkdir -p data/archive
+        mkdir -p data/current
+    
+    - name: Scrape Jersey weather data
+      run: |
+        # Get current date in ISO format
+        CURRENT_DATE=$(date -u +"%Y-%m-%d")
+        TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+        
+        echo "Scraping weather data for $CURRENT_DATE"
+        
+        # Fetch the weather data
+        curl -s "https://prodgojweatherstorage.blob.core.windows.net/data/jerseyForecast.json" > raw_data.json
+        
+        # Check if curl was successful
+        if [ $? -ne 0 ]; then
+          echo "Failed to fetch weather data"
+          exit 1
+        fi
+        
+        # Validate JSON is not empty
+        if [ ! -s raw_data.json ]; then
+          echo "Weather data is empty"
+          exit 1
+        fi
+        
+        # Extract today's weather data using Node.js
+        node -e "
+        const fs = require('fs');
+        const data = JSON.parse(fs.readFileSync('raw_data.json', 'utf8'));
+        
+        // Extract metadata and today's forecast (first item in forecastDay array)
+        const todayData = {
+          scrapeTimestamp: '$TIMESTAMP',
+          scrapedDate: '$CURRENT_DATE',
+          currentTemperature: data.currentTemprature, // Note: API has typo 'Temprature'
+          currentTemperatureFahrenheit: data.currentTempratureFahrenheit,
+          issueTime: data.issuetime,
+          cacheTime: data.cacheTime,
+          forecastDate: data.forecastDate,
+          forecastTime: data.forecastTime,
+          location: data.Location,
+          todayForecast: data.forecastDay[0] || null
+        };
+        
+        // Save processed today's data
+        fs.writeFileSync('data/current/jersey-weather-today.json', JSON.stringify(todayData, null, 2));
+        
+        // Save raw data to archive with date
+        fs.writeFileSync('data/archive/jersey-weather-raw-$CURRENT_DATE.json', JSON.stringify(data, null, 2));
+        
+        console.log('Weather data processed successfully');
+        console.log('Current temperature:', todayData.currentTemperature);
+        console.log('Today summary:', todayData.todayForecast?.summary || 'No forecast available');
+        "
+        
+        # Clean up temporary file
+        rm raw_data.json
+    
+    - name: Update analysis file
+      run: |
+        # Create or update a consolidated analysis file
+        CURRENT_DATE=$(date -u +"%Y-%m-%d")
+        
+        node -e "
+        const fs = require('fs');
+        
+        // Load today's data
+        const todayData = JSON.parse(fs.readFileSync('data/current/jersey-weather-today.json', 'utf8'));
+        
+        // Load or create historical analysis file
+        let analysisData = { lastUpdated: null, entries: [] };
+        if (fs.existsSync('data/jersey-weather-analysis.json')) {
+          analysisData = JSON.parse(fs.readFileSync('data/jersey-weather-analysis.json', 'utf8'));
+        }
+        
+        // Create analysis entry
+        const analysisEntry = {
+          date: '$CURRENT_DATE',
+          timestamp: todayData.scrapeTimestamp,
+          temperature: {
+            current: todayData.currentTemperature,
+            currentF: todayData.currentTemperatureFahrenheit,
+            max: todayData.todayForecast?.maxTemp,
+            maxF: todayData.todayForecast?.maxTempFahrenheit,
+            min: todayData.todayForecast?.minTemp,
+            minF: todayData.todayForecast?.minTempFahrenheit
+          },
+          weather: {
+            summary: todayData.todayForecast?.summary,
+            morningDescription: todayData.todayForecast?.morningDescripiton,
+            afternoonDescription: todayData.todayForecast?.afternoonDescripiton,
+            nightDescription: todayData.todayForecast?.nightDescripiton
+          },
+          wind: {
+            direction: todayData.todayForecast?.windDirection,
+            speed: todayData.todayForecast?.windSpeed,
+            speedMph: todayData.todayForecast?.windSpeedMPH,
+            speedKm: todayData.todayForecast?.windSpeedKM,
+            speedKnots: todayData.todayForecast?.windSpeedKnots
+          },
+          rain: {
+            probabilityMorning: todayData.todayForecast?.rainProbMorning,
+            probabilityAfternoon: todayData.todayForecast?.rainProbAfternoon,
+            probabilityEvening: todayData.todayForecast?.rainProbEvening
+          },
+          uv: {
+            index: todayData.todayForecast?.uvIndex
+          },
+          sun: {
+            sunrise: todayData.todayForecast?.sunRise,
+            sunset: todayData.todayForecast?.sunSet
+          }
+        };
+        
+        // Remove existing entry for today (if any) and add new one
+        analysisData.entries = analysisData.entries.filter(entry => entry.date !== '$CURRENT_DATE');
+        analysisData.entries.push(analysisEntry);
+        
+        // Sort by date (newest first)
+        analysisData.entries.sort((a, b) => b.date.localeCompare(a.date));
+        
+        // Keep only last 90 days in analysis file (optional)
+        if (analysisData.entries.length > 90) {
+          analysisData.entries = analysisData.entries.slice(0, 90);
+        }
+        
+        analysisData.lastUpdated = todayData.scrapeTimestamp;
+        
+        // Save analysis file
+        fs.writeFileSync('data/jersey-weather-analysis.json', JSON.stringify(analysisData, null, 2));
+        
+        console.log('Analysis file updated with', analysisData.entries.length, 'entries');
+        "
+    
+    - name: Commit and push changes
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        
+        # Add all data files
+        git add data/
+        
+        # Check if there are changes to commit
+        if git diff --staged --quiet; then
+          echo "No changes to commit"
+        else
+          CURRENT_DATE=$(date -u +"%Y-%m-%d")
+          git commit -m "Update Jersey weather data for $CURRENT_DATE"
+          git push
+        fi
+    
+    - name: Create summary
+      run: |
+        echo "## Jersey Weather Scrape Summary" >> $GITHUB_STEP_SUMMARY
+        echo "- **Date**: $(date -u +"%Y-%m-%d")" >> $GITHUB_STEP_SUMMARY
+        echo "- **Time**: $(date -u +"%H:%M:%S UTC")" >> $GITHUB_STEP_SUMMARY
+        
+        if [ -f "data/current/jersey-weather-today.json" ]; then
+          TEMP=$(node -e "console.log(JSON.parse(require('fs').readFileSync('data/current/jersey-weather-today.json', 'utf8')).currentTemperature)")
+          SUMMARY=$(node -e "const data = JSON.parse(require('fs').readFileSync('data/current/jersey-weather-today.json', 'utf8')); console.log(data.todayForecast?.summary || 'No summary available')")
+          echo "- **Current Temperature**: $TEMP" >> $GITHUB_STEP_SUMMARY
+          echo "- **Today's Summary**: $SUMMARY" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        echo "- **Files Updated**:" >> $GITHUB_STEP_SUMMARY
+        echo "  - \`data/current/jersey-weather-today.json\` (today's processed data)" >> $GITHUB_STEP_SUMMARY
+        echo "  - \`data/archive/jersey-weather-raw-$(date -u +"%Y-%m-%d").json\` (raw API response)" >> $GITHUB_STEP_SUMMARY
+        echo "  - \`data/jersey-weather-analysis.json\` (consolidated analysis data)" >> $GITHUB_STEP_SUMMARY

@@ -1,0 +1,42 @@
+{
+  "lastUpdated": "2025-08-25T10:06:38Z",
+  "entries": [
+    {
+      "date": "2025-08-25",
+      "timestamp": "2025-08-25T10:06:38Z",
+      "temperature": {
+        "current": "23.1°C",
+        "currentF": "74°F",
+        "max": "29°C",
+        "maxF": "84°F",
+        "min": "16°C",
+        "minF": "61°F"
+      },
+      "weather": {
+        "summary": "Mainly sunny.",
+        "morningDescription": "Mainly sunny.",
+        "afternoonDescription": "Sunny and hot.",
+        "nightDescription": "Clear, becoming rather cloudy, with the chance of rain towards dawn."
+      },
+      "wind": {
+        "direction": "SE",
+        "speed": "F3",
+        "speedMph": "10",
+        "speedKm": "16",
+        "speedKnots": "9"
+      },
+      "rain": {
+        "probabilityMorning": "0",
+        "probabilityAfternoon": "0",
+        "probabilityEvening": "25"
+      },
+      "uv": {
+        "index": "6"
+      },
+      "sun": {
+        "sunrise": "06:15",
+        "sunset": "20:05"
+      }
+    }
+  ]
+}

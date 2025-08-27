@@ -1,6 +1,43 @@
 {
-  "lastUpdated": "2025-08-26T10:44:41Z",
+  "lastUpdated": "2025-08-27T10:41:42Z",
   "entries": [
+    {
+      "date": "2025-08-27",
+      "timestamp": "2025-08-27T10:41:42Z",
+      "temperature": {
+        "current": "20.6°C",
+        "currentF": "69°F",
+        "max": "23°C",
+        "maxF": "73°F",
+        "min": "14°C",
+        "minF": "57°F"
+      },
+      "weather": {
+        "summary": "Bright spells at first, becoming cloudier with showers possible from late morning.",
+        "morningDescription": "Bright spells at first, becoming cloudier with showers possible from late morning.",
+        "afternoonDescription": "Cloudy with showers, perhaps heavy or thundery, becoming sunnier in the evening.",
+        "nightDescription": "Clear spells and a chance of one or two light showers."
+      },
+      "wind": {
+        "direction": "SW",
+        "speed": "F4",
+        "speedMph": "15",
+        "speedKm": "24",
+        "speedKnots": "13"
+      },
+      "rain": {
+        "probabilityMorning": "40",
+        "probabilityAfternoon": "90",
+        "probabilityEvening": "30"
+      },
+      "uv": {
+        "index": "5"
+      },
+      "sun": {
+        "sunrise": "06:18",
+        "sunset": "20:01"
+      }
+    },
     {
       "date": "2025-08-26",
       "timestamp": "2025-08-26T10:44:41Z",

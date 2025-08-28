@@ -1,6 +1,43 @@
 {
-  "lastUpdated": "2025-08-27T10:41:42Z",
+  "lastUpdated": "2025-08-28T10:42:29Z",
   "entries": [
+    {
+      "date": "2025-08-28",
+      "timestamp": "2025-08-28T10:42:29Z",
+      "temperature": {
+        "current": "19.2°C",
+        "currentF": "66°F",
+        "max": "20°C",
+        "maxF": "68°F",
+        "min": "14°C",
+        "minF": "57°F"
+      },
+      "weather": {
+        "summary": "Sunny spells, but a chance of the odd shower.",
+        "morningDescription": "Sunny spells, but a chance of the odd shower.",
+        "afternoonDescription": "Sunny spells, but a chance of the odd shower.",
+        "nightDescription": "Increasingly cloudy with heavy showers, perhaps thundery, likely merging into a prolonged spell of rain."
+      },
+      "wind": {
+        "direction": "WSW",
+        "speed": "F5",
+        "speedMph": "22",
+        "speedKm": "35",
+        "speedKnots": "19"
+      },
+      "rain": {
+        "probabilityMorning": "35",
+        "probabilityAfternoon": "45",
+        "probabilityEvening": "100"
+      },
+      "uv": {
+        "index": "5"
+      },
+      "sun": {
+        "sunrise": "06:19",
+        "sunset": "19:59"
+      }
+    },
     {
       "date": "2025-08-27",
       "timestamp": "2025-08-27T10:41:42Z",

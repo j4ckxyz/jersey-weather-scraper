@@ -1,6 +1,43 @@
 {
-  "lastUpdated": "2025-08-28T10:42:29Z",
+  "lastUpdated": "2025-08-29T10:41:52Z",
   "entries": [
+    {
+      "date": "2025-08-29",
+      "timestamp": "2025-08-29T10:41:52Z",
+      "temperature": {
+        "current": "18.4°C",
+        "currentF": "65°F",
+        "max": "20°C",
+        "maxF": "68°F",
+        "min": "15°C",
+        "minF": "59°F"
+      },
+      "weather": {
+        "summary": "Sunny periods with the chance of a shower.",
+        "morningDescription": "Sunny periods with the chance of a shower.",
+        "afternoonDescription": "Sunny periods and the chance of one or two showers.",
+        "nightDescription": "Clear periods and the chance of a shower."
+      },
+      "wind": {
+        "direction": "WSW",
+        "speed": "F5",
+        "speedMph": "22",
+        "speedKm": "35",
+        "speedKnots": "19"
+      },
+      "rain": {
+        "probabilityMorning": "30",
+        "probabilityAfternoon": "30",
+        "probabilityEvening": "25"
+      },
+      "uv": {
+        "index": "5"
+      },
+      "sun": {
+        "sunrise": "06:20",
+        "sunset": "19:57"
+      }
+    },
     {
       "date": "2025-08-28",
       "timestamp": "2025-08-28T10:42:29Z",
